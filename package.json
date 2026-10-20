@@ -1,8 +1,9 @@
 {
   "name": "miniproxy",
-  "version": "2.0.0",
-  "description": "Restricted full-page proxy viewer for authorised domains",
+  "version": "3.0.0",
+  "description": "Full-page proxy viewer",
   "main": "server.js",
+  "engines": { "node": ">=18" },
   "scripts": { "start": "node server.js" },
   "dependencies": {
     "cheerio": "^1.0.0",

@@ -1,4 +1,3 @@
-
 const SERVER_URL = "https://miniproxy-p53r.onrender.com";
 
 const address = document.getElementById("address");
@@ -17,29 +16,25 @@ function normalizeUrl(value) {
 
   if (!/^[a-zA-Z][a-zA-Z\d+.-]*:/.test(input)) {
     if (input.includes(" ") || !input.includes(".")) {
-      return "https://www.google.com/search?q=" +
-        encodeURIComponent(input);
+      return "https://duckduckgo.com/html/?q=" + encodeURIComponent(input);
     }
     input = "https://" + input;
   }
 
   try {
     const parsed = new URL(input);
-    if (parsed.protocol !== "https:") return null;
+    if (parsed.protocol !== "https:" && parsed.protocol !== "http:") return null;
     return parsed.href;
   } catch {
     return null;
   }
 }
 
-async function navigate(value, addHistory = true) {
-  const url = normalizeUrl(value);
+function proxied(url) {
+  return `${SERVER_URL}/proxy?url=${encodeURIComponent(url)}`;
+}
 
-  if (!url) {
-    status.textContent = "Enter a valid HTTPS website address.";
-    return;
-  }
-
+function show(url, addHistory = true) {
   currentUrl = url;
   address.value = url;
   welcomeAddress.value = url;
@@ -51,44 +46,47 @@ async function navigate(value, addHistory = true) {
   }
 
   welcome.style.display = "none";
-  frame.style.display = "none";
-  status.textContent = "Connecting to server…";
-
-  try {
-    const response = await fetch(`${SERVER_URL}/api/read`, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ url })
-    });
-
-    const data = await response.json();
-
-    if (!response.ok) {
-      throw new Error(data.error || "The server rejected this request.");
-    }
-
-    // Display returned text safely, without interpreting it as HTML.
-    const output = document.createElement("pre");
-    output.textContent = data.text || "No text was returned.";
-    output.style.cssText =
-      "white-space:pre-wrap;overflow-wrap:anywhere;" +
-      "font:16px/1.6 Arial,sans-serif;padding:20px;" +
-      "margin:0;max-width:900px;color:inherit;";
-
-    const container = document.getElementById("text-results");
-    if (!container) {
-      status.textContent =
-        "Missing text-results element. Update viewer.html as well.";
-      return;
-    }
-
-    container.replaceChildren(output);
-    container.style.display = "block";
-    status.textContent = `Loaded text from ${new URL(url).hostname}`;
-  } catch (error) {
-    status.textContent = `Unable to load: ${error.message}`;
-  }
+  frame.style.display = "block";
+  status.textContent = `Loading ${new URL(url).hostname}…`;
+  frame.src = proxied(url);
 }
+
+function navigate(value, addHistory = true) {
+  const url = normalizeUrl(value);
+  if (!url) {
+    status.textContent = "Enter a valid website address.";
+    return;
+  }
+  show(url, addHistory);
+}
+
+// The proxied page reports its real URL whenever it loads (links, forms, redirects).
+window.addEventListener("message", event => {
+  if (event.source !== frame.contentWindow) return;
+  const data = event.data;
+  if (!data || data.type !== "miniproxy-nav" || typeof data.url !== "string") return;
+
+  if (data.url !== currentUrl) {
+    currentUrl = data.url;
+    address.value = data.url;
+    // Only add to history if this wasn't a back/forward move.
+    if (historyList[historyIndex] !== data.url) {
+      historyList = historyList.slice(0, historyIndex + 1);
+      historyList.push(data.url);
+      historyIndex = historyList.length - 1;
+    }
+  }
+  if (data.title) document.title = data.title + " – Mini Proxy Viewer";
+  try {
+    status.textContent = `Loaded ${new URL(data.url).hostname}`;
+  } catch {}
+});
+
+frame.addEventListener("load", () => {
+  if (currentUrl && status.textContent.startsWith("Loading")) {
+    status.textContent = `Loaded ${new URL(currentUrl).hostname}`;
+  }
+});
 
 document.getElementById("nav-form").addEventListener("submit", event => {
   event.preventDefault();
@@ -103,21 +101,21 @@ document.getElementById("welcome-form").addEventListener("submit", event => {
 document.getElementById("back").addEventListener("click", () => {
   if (historyIndex > 0) {
     historyIndex--;
-    navigate(historyList[historyIndex], false);
+    show(historyList[historyIndex], false);
   }
 });
 
 document.getElementById("forward").addEventListener("click", () => {
   if (historyIndex < historyList.length - 1) {
     historyIndex++;
-    navigate(historyList[historyIndex], false);
+    show(historyList[historyIndex], false);
   }
 });
 
 document.getElementById("reload").addEventListener("click", () => {
-  if (currentUrl) navigate(currentUrl, false);
+  if (currentUrl) show(currentUrl, false);
 });
 
 document.getElementById("open-tab").addEventListener("click", () => {
-  if (currentUrl) chrome.tabs.create({ url: currentUrl });
+  if (currentUrl) chrome.tabs.create({ url: proxied(currentUrl) });
 });

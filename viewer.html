@@ -1,4 +1,3 @@
-
 <!doctype html>
 <html lang="en">
 <head>
@@ -6,45 +5,6 @@
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>Mini Proxy Viewer</title>
   <link rel="stylesheet" href="viewer.css">
-  <style>
-    #text-results {
-      display: none;
-      padding: 20px;
-      overflow-wrap: anywhere;
-    }
-
-    #text-results pre {
-      white-space: pre-wrap;
-      overflow-wrap: anywhere;
-      font: 16px/1.6 Arial, sans-serif;
-    }
-
-    #site-frame {
-      display: none;
-      width: 100%;
-      height: calc(100vh - 100px);
-      border: 0;
-    }
-
-    main {
-      min-height: 70vh;
-    }
-
-    input {
-      min-width: 0;
-    }
-
-    #nav-form {
-      display: flex;
-      flex: 1;
-      gap: 8px;
-    }
-
-    #address {
-      flex: 1;
-      width: 100%;
-    }
-  </style>
 </head>
 
 <body>
@@ -59,25 +19,20 @@
         type="text"
         spellcheck="false"
         autocomplete="url"
-        placeholder="Enter a website address…"
+        placeholder="Enter a website address or search…"
         aria-label="Website address"
       >
       <button type="submit" id="go">Go</button>
     </form>
 
-    <button
-      id="open-tab"
-      type="button"
-      title="Open current address in a new tab"
-      aria-label="Open in new tab"
-    >↗</button>
+    <button id="open-tab" type="button" title="Open current page in a new tab" aria-label="Open in new tab">↗</button>
   </header>
 
   <main>
     <section id="welcome" class="welcome">
       <div class="logo">↗</div>
       <h1>Mini Proxy Viewer</h1>
-      <p>Enter a website address to retrieve its text.</p>
+      <p>Enter a website address or a search to browse through your server.</p>
 
       <form id="welcome-form">
         <input
@@ -91,24 +46,15 @@
       </form>
 
       <p class="note">
-        Displays text returned by your connected server.
-        Some websites may not be supported.
+        Pages load through your connected server. Complex sites that rely on
+        heavy JavaScript, logins or streaming may not work fully.
       </p>
     </section>
 
-    <section id="text-results" aria-live="polite"></section>
-
-    <iframe
-      id="site-frame"
-      title="Website viewer"
-      referrerpolicy="no-referrer"
-    ></iframe>
+    <iframe id="site-frame" title="Website viewer" referrerpolicy="no-referrer"></iframe>
   </main>
 
-  <footer id="status" role="status">
-    Ready · Connected server:
-    https://miniproxy-p53r.onrender.com
-  </footer>
+  <footer id="status" role="status">Ready</footer>
 
   <script src="viewer.js"></script>
 </body>
