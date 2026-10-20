@@ -1,0 +1,14 @@
+{
+  "manifest_version": 3,
+  "name": "Mini Proxy Viewer",
+  "version": "1.1.0",
+  "description": "Open a compact website viewer in a normal Chrome tab.",
+  "permissions": ["storage"],
+  "host_permissions": ["http://*/*", "https://*/*"],
+  "action": {
+    "default_title": "Open Mini Proxy Viewer"
+  },
+  "background": {
+    "service_worker": "background.js"
+  }
+}

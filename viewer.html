@@ -1,0 +1,37 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>Mini Proxy Viewer</title>
+  <link rel="stylesheet" href="viewer.css">
+</head>
+<body>
+  <header class="toolbar">
+    <button id="back" title="Back" aria-label="Back">←</button>
+    <button id="forward" title="Forward" aria-label="Forward">→</button>
+    <button id="reload" title="Reload" aria-label="Reload">↻</button>
+    <form id="nav-form">
+      <input id="address" type="text" spellcheck="false" autocomplete="url"
+        placeholder="Enter a website address…" aria-label="Website address">
+      <button type="submit" id="go">Go</button>
+    </form>
+    <button id="open-tab" title="Open current address in a new tab">↗</button>
+  </header>
+  <main>
+    <section id="welcome" class="welcome">
+      <div class="logo">↗</div>
+      <h1>Mini Proxy Viewer</h1>
+      <p>Open a website in this tab's compact viewer.</p>
+      <form id="welcome-form">
+        <input id="welcome-address" type="text" placeholder="https://example.com" spellcheck="false">
+        <button type="submit">Open website</button>
+      </form>
+      <p class="note">This version embeds websites directly. It is not a server-side proxy and cannot bypass sites that block embedding.</p>
+    </section>
+    <iframe id="site-frame" title="Website viewer" referrerpolicy="no-referrer"></iframe>
+  </main>
+  <footer id="status">Ready · Embedded viewer, not a proxy server.</footer>
+  <script src="viewer.js"></script>
+</body>
+</html>
