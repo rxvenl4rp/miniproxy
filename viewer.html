@@ -1,37 +1,115 @@
+
 <!doctype html>
 <html lang="en">
 <head>
   <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>Mini Proxy Viewer</title>
   <link rel="stylesheet" href="viewer.css">
+  <style>
+    #text-results {
+      display: none;
+      padding: 20px;
+      overflow-wrap: anywhere;
+    }
+
+    #text-results pre {
+      white-space: pre-wrap;
+      overflow-wrap: anywhere;
+      font: 16px/1.6 Arial, sans-serif;
+    }
+
+    #site-frame {
+      display: none;
+      width: 100%;
+      height: calc(100vh - 100px);
+      border: 0;
+    }
+
+    main {
+      min-height: 70vh;
+    }
+
+    input {
+      min-width: 0;
+    }
+
+    #nav-form {
+      display: flex;
+      flex: 1;
+      gap: 8px;
+    }
+
+    #address {
+      flex: 1;
+      width: 100%;
+    }
+  </style>
 </head>
+
 <body>
   <header class="toolbar">
-    <button id="back" title="Back" aria-label="Back">←</button>
-    <button id="forward" title="Forward" aria-label="Forward">→</button>
-    <button id="reload" title="Reload" aria-label="Reload">↻</button>
+    <button id="back" type="button" title="Back" aria-label="Back">←</button>
+    <button id="forward" type="button" title="Forward" aria-label="Forward">→</button>
+    <button id="reload" type="button" title="Reload" aria-label="Reload">↻</button>
+
     <form id="nav-form">
-      <input id="address" type="text" spellcheck="false" autocomplete="url"
-        placeholder="Enter a website address…" aria-label="Website address">
+      <input
+        id="address"
+        type="text"
+        spellcheck="false"
+        autocomplete="url"
+        placeholder="Enter a website address…"
+        aria-label="Website address"
+      >
       <button type="submit" id="go">Go</button>
     </form>
-    <button id="open-tab" title="Open current address in a new tab">↗</button>
+
+    <button
+      id="open-tab"
+      type="button"
+      title="Open current address in a new tab"
+      aria-label="Open in new tab"
+    >↗</button>
   </header>
+
   <main>
     <section id="welcome" class="welcome">
       <div class="logo">↗</div>
       <h1>Mini Proxy Viewer</h1>
-      <p>Open a website in this tab's compact viewer.</p>
+      <p>Enter a website address to retrieve its text.</p>
+
       <form id="welcome-form">
-        <input id="welcome-address" type="text" placeholder="https://example.com" spellcheck="false">
+        <input
+          id="welcome-address"
+          type="text"
+          placeholder="https://example.com"
+          spellcheck="false"
+          aria-label="Website address"
+        >
         <button type="submit">Open website</button>
       </form>
-      <p class="note">This version embeds websites directly. It is not a server-side proxy and cannot bypass sites that block embedding.</p>
+
+      <p class="note">
+        Displays text returned by your connected server.
+        Some websites may not be supported.
+      </p>
     </section>
-    <iframe id="site-frame" title="Website viewer" referrerpolicy="no-referrer"></iframe>
+
+    <section id="text-results" aria-live="polite"></section>
+
+    <iframe
+      id="site-frame"
+      title="Website viewer"
+      referrerpolicy="no-referrer"
+    ></iframe>
   </main>
-  <footer id="status">Ready · Embedded viewer, not a proxy server.</footer>
+
+  <footer id="status" role="status">
+    Ready · Connected server:
+    https://miniproxy-p53r.onrender.com
+  </footer>
+
   <script src="viewer.js"></script>
 </body>
 </html>
