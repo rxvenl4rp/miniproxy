@@ -1,121 +1,38 @@
-const SERVER_URL = "https://miniproxy-p53r.onrender.com";
-
-const address = document.getElementById("address");
-const welcomeAddress = document.getElementById("welcome-address");
-const frame = document.getElementById("site-frame");
-const welcome = document.getElementById("welcome");
-const status = document.getElementById("status");
-
-let currentUrl = "";
+const SERVER_URL = 'https://miniproxy-p53r.onrender.com';
+const address = document.getElementById('address');
+const welcomeAddress = document.getElementById('welcome-address');
+const frame = document.getElementById('proxy-frame');
+const welcome = document.getElementById('welcome');
+const status = document.getElementById('status');
 let historyList = [];
 let historyIndex = -1;
+let currentUrl = '';
 
-function normalizeUrl(value) {
+function normalize(value) {
   let input = value.trim();
   if (!input) return null;
-
   if (!/^[a-zA-Z][a-zA-Z\d+.-]*:/.test(input)) {
-    if (input.includes(" ") || !input.includes(".")) {
-      return "https://duckduckgo.com/html/?q=" + encodeURIComponent(input);
-    }
-    input = "https://" + input;
+    if (input.includes(' ') || !input.includes('.')) input = 'https://www.google.com/search?q=' + encodeURIComponent(input);
+    else input = 'https://' + input;
   }
-
-  try {
-    const parsed = new URL(input);
-    if (parsed.protocol !== "https:" && parsed.protocol !== "http:") return null;
-    return parsed.href;
-  } catch {
-    return null;
-  }
+  try { const u = new URL(input); return u.protocol === 'https:' ? u.href : null; }
+  catch { return null; }
 }
-
-function proxied(url) {
-  return `${SERVER_URL}/proxy?url=${encodeURIComponent(url)}`;
-}
-
-function show(url, addHistory = true) {
+function navigate(value, push = true) {
+  const url = normalize(value);
+  if (!url) { status.textContent = 'Enter a valid HTTPS address.'; return; }
   currentUrl = url;
   address.value = url;
   welcomeAddress.value = url;
-
-  if (addHistory) {
-    historyList = historyList.slice(0, historyIndex + 1);
-    historyList.push(url);
-    historyIndex = historyList.length - 1;
-  }
-
-  welcome.style.display = "none";
-  frame.style.display = "block";
-  status.textContent = `Loading ${new URL(url).hostname}…`;
-  frame.src = proxied(url);
+  if (push) { historyList = historyList.slice(0, historyIndex + 1); historyList.push(url); historyIndex = historyList.length - 1; }
+  welcome.style.display = 'none';
+  frame.style.display = 'block';
+  status.textContent = 'Loading through MiniProxy: ' + url;
+  frame.src = SERVER_URL + '/proxy?url=' + encodeURIComponent(url);
 }
-
-function navigate(value, addHistory = true) {
-  const url = normalizeUrl(value);
-  if (!url) {
-    status.textContent = "Enter a valid website address.";
-    return;
-  }
-  show(url, addHistory);
-}
-
-// The proxied page reports its real URL whenever it loads (links, forms, redirects).
-window.addEventListener("message", event => {
-  if (event.source !== frame.contentWindow) return;
-  const data = event.data;
-  if (!data || data.type !== "miniproxy-nav" || typeof data.url !== "string") return;
-
-  if (data.url !== currentUrl) {
-    currentUrl = data.url;
-    address.value = data.url;
-    // Only add to history if this wasn't a back/forward move.
-    if (historyList[historyIndex] !== data.url) {
-      historyList = historyList.slice(0, historyIndex + 1);
-      historyList.push(data.url);
-      historyIndex = historyList.length - 1;
-    }
-  }
-  if (data.title) document.title = data.title + " – Mini Proxy Viewer";
-  try {
-    status.textContent = `Loaded ${new URL(data.url).hostname}`;
-  } catch {}
-});
-
-frame.addEventListener("load", () => {
-  if (currentUrl && status.textContent.startsWith("Loading")) {
-    status.textContent = `Loaded ${new URL(currentUrl).hostname}`;
-  }
-});
-
-document.getElementById("nav-form").addEventListener("submit", event => {
-  event.preventDefault();
-  navigate(address.value);
-});
-
-document.getElementById("welcome-form").addEventListener("submit", event => {
-  event.preventDefault();
-  navigate(welcomeAddress.value);
-});
-
-document.getElementById("back").addEventListener("click", () => {
-  if (historyIndex > 0) {
-    historyIndex--;
-    show(historyList[historyIndex], false);
-  }
-});
-
-document.getElementById("forward").addEventListener("click", () => {
-  if (historyIndex < historyList.length - 1) {
-    historyIndex++;
-    show(historyList[historyIndex], false);
-  }
-});
-
-document.getElementById("reload").addEventListener("click", () => {
-  if (currentUrl) show(currentUrl, false);
-});
-
-document.getElementById("open-tab").addEventListener("click", () => {
-  if (currentUrl) chrome.tabs.create({ url: proxied(currentUrl) });
-});
+document.getElementById('nav-form').addEventListener('submit', e => { e.preventDefault(); navigate(address.value); });
+document.getElementById('welcome-form').addEventListener('submit', e => { e.preventDefault(); navigate(welcomeAddress.value); });
+document.getElementById('back').addEventListener('click', () => { if (historyIndex > 0) { historyIndex--; navigate(historyList[historyIndex], false); } });
+document.getElementById('forward').addEventListener('click', () => { if (historyIndex < historyList.length - 1) { historyIndex++; navigate(historyList[historyIndex], false); } });
+document.getElementById('reload').addEventListener('click', () => { if (currentUrl) navigate(currentUrl, false); });
+frame.addEventListener('load', () => { if (currentUrl) status.textContent = 'Proxy response loaded · ' + new URL(currentUrl).hostname; });
